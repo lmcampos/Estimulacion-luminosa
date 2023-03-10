@@ -37,7 +37,8 @@ extern "C" {
 
 
 /*=====[Prototypes (declarations) of public functions]=======================*/
-void interruptTimerInit();
+void interruptTimerInit(void);
+void interruptTimerDiseable(void);
 void timer0Periodo(void* ptr);
 void timer0CompareMatch1(void *ptr);
 

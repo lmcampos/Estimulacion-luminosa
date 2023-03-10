@@ -41,9 +41,11 @@
 
 /*==================[inlcusiones]============================================*/
 #include "interrupttimer.h"
+#include "led.h"
 
-gpioMap_t led[] = { LED1, LED2, LED3 };
-static uint8_t i = 0;
+struct led * led;
+struct led * l;
+
 
 void interruptTimerInit(void){
 //********* Configuración para la interrupnción del timer*******************
@@ -54,39 +56,42 @@ void interruptTimerInit(void){
 	Timer_EnableCompareMatch(TIMER0, TIMERCOMPAREMATCH1,
 		Timer_microsecondsToTicks(NOVENTAPORCIENTO), timer0CompareMatch1);
 }
+void interruptTimerDiseable(void){
+	Timer_DisableCompareMatch( TIMER0, TIMERCOMPAREMATCH1 );
+	Timer_DeInit( TIMER0 );
+
+}
 
 void timer0Periodo(void* ptr) {
-/*======== Interrupción de periodica de COMPLETECYCLE_PERIODO============*/
-/*======== Con esta interrupciòn generamos una señal PWM con periodo de 1[seg]=========*/
+	/*======== Interrupción de periodica de COMPLETECYCLE_PERIODO============*/
+	/*======== Con esta interrupciòn generamos una señal PWM con periodo de 1[seg]=========*/
+	// led * l = NULL;
+	l=led;
+	gpioWrite(l->colorLed, ON);
 
-	static uint32_t dutyCycle = 0;
-	static uint32_t factor=1;
+	l->dutyCycle = l->dutyCycle + l->factor;
+	if (l->dutyCycle <= COMPLETECYCLE_PERIODO) {
+		Timer_SetCompareMatch(TIMER0, TIMERCOMPAREMATCH1,
+				Timer_microsecondsToTicks(l->dutyCycle));
+	} else
+		Timer_DisableCompareMatch(TIMER0, TIMERCOMPAREMATCH1);
 
-	gpioWrite(led[i], ON);
+	if (l->dutyCycle > COMPLETECYCLE_PERIODO) {
+		gpioWrite(l->colorLed, OFF);
+		l->dutyCycle = l->factor;
+		Timer_EnableCompareMatch(TIMER0, TIMERCOMPAREMATCH1,
+				Timer_microsecondsToTicks(l->dutyCycle), timer0CompareMatch1);
 
-		dutyCycle = dutyCycle + factor;
-		if (dutyCycle <= COMPLETECYCLE_PERIODO) {
-			Timer_SetCompareMatch(TIMER0, TIMERCOMPAREMATCH1,
-					Timer_microsecondsToTicks(dutyCycle));
-		}else Timer_DisableCompareMatch( TIMER0, TIMERCOMPAREMATCH1 );
-
-			if (dutyCycle > COMPLETECYCLE_PERIODO) {
-				gpioWrite(led[i], OFF);
-				dutyCycle = factor;
-				Timer_EnableCompareMatch(TIMER0, TIMERCOMPAREMATCH1,
-							Timer_microsecondsToTicks(dutyCycle), timer0CompareMatch1);
-
-
-				i++;
-				if (i == 3) {
-					i = 0;
-				}
-				gpioWrite(led[i], ON);
-				//dutyCycle = 0;
-			}
+		if(l->sig != NULL){
+			l=l->sig;
+		}
+		if(l==NULL) l=led;
+		gpioWrite(l->colorLed, ON);
+		//dutyCycle = 0;
+	}
 
 }
 void timer0CompareMatch1(void *ptr){
-	gpioWrite(led[i],OFF);
+	gpioWrite(l->colorLed,OFF);
 
 }

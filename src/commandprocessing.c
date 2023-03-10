@@ -42,7 +42,12 @@
 /*==================[inlcusiones]============================================*/
 #include "commandprocessing.h"
 #include "interrupttimer.h"
+#include "led.h"
 
+//struct led * pled = NULL;
+
+gpioMap_t gpio[] = { LED1, LED2, LED3, GPIO3, GPIO4, GPIO5};
+                   //ROJO(R0) AMARILLO(A1) VERDE(V2) AZUL(A3) VIOLETA(VI4) CELESTE(C5):
 void commandProcessingQueueCreate(void) {
 	processingComandQueue = xQueueCreate(SIZECOMMANDQUEUE, sizeof(char*));
 
@@ -55,16 +60,21 @@ void commandProcessingQueueCreate(void) {
 }
 
 void commandProcessingTask(void * taskParmPtr) {
+
 	char *pCommandToProcess = NULL;
 	uint16_t factor;
+	gpioMap_t cLed;
+	uint8_t j;
 
 	while (TRUE) {
 		if (xQueueReceive(processingComandQueue, &pCommandToProcess,
 		portMAX_DELAY) == pdTRUE) {
+			j = *(pCommandToProcess + 1) - '0';
 			switch (*(pCommandToProcess)) {
 			case 'r':
 				if (*(pCommandToProcess + 1) == '0') {
 					// debo asignar el gpio cnectado al led rojo
+					cLed = gpio[j];
 				} else {
 					// comando invalido
 				}
@@ -72,6 +82,7 @@ void commandProcessingTask(void * taskParmPtr) {
 			case 'a':
 				if (*(pCommandToProcess + 1) == '1') {
 					// debo asignar el gpio cnectado al led amarillo
+					cLed = gpio[j];
 				} else {
 					// comando invalido
 				}
@@ -79,6 +90,7 @@ void commandProcessingTask(void * taskParmPtr) {
 			case 'v':
 				if (*(pCommandToProcess + 1) == '2') {
 					// debo asignar el gpio cnectado al led verde
+					cLed = gpio[j];
 				} else {
 					// comando invalido
 				}
@@ -86,6 +98,8 @@ void commandProcessingTask(void * taskParmPtr) {
 			case 'A':
 				if (*(pCommandToProcess + 1) == '3') {
 					// debo asignar el gpio cnectado al led azul
+					cLed = gpio[j];
+
 				} else {
 					// comando invalido
 				}
@@ -93,6 +107,7 @@ void commandProcessingTask(void * taskParmPtr) {
 			case 'V':
 				if (*(pCommandToProcess + 1) == '4') {
 					// debo asignar el gpio cnectado al led violeta
+					cLed = gpio[j];
 				} else {
 					// comando invalido
 				}
@@ -102,7 +117,7 @@ void commandProcessingTask(void * taskParmPtr) {
 
 				if (*(pCommandToProcess + 1) == '5') {
 					// debo asignar el gpio cnectado al celeste
-
+					cLed = gpio[j];
 				} else {
 					// comando invalido
 				}
@@ -111,9 +126,15 @@ void commandProcessingTask(void * taskParmPtr) {
 				factor = commandProcessingConverterCaracterToDecimal((pCommandToProcess+1), 4);
 				//uartWriteString(UART_USB, "\n El factor es:");
 			    printf("\n el factor es:%d",factor);
+			    ledAddNodeEnd(&pLed, cLed, factor, 0);
+			    cLed=110;// poner un valor invalido porque queda grabado para el proxímo ingreso de datos
+
 				break;
 			case 'i':
 				interruptTimerInit();
+				break;
+			case 'd':
+				interruptTimerDiseable();
 				break;
 			}
 

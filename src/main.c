@@ -42,14 +42,22 @@ int main(void) {
 	boardConfig();
 	gpioConfig(GPIO0, GPIO_OUTPUT);
 	serialPortForInterruptInit();
+
+	char miTexto [] = "\n ROJO(r0) AMARILLO(a1) VERDE(v2) AZUL(A3) VIOLETA(VI4) CELESTE(c5):";
+	char miTexto1 [] = "\n Inciar estimulacion (i):";
+	char miTexto2 [] = "\n Detener la estimulacion (d):";
+
 	// creación de las colas
 	serialPortQueueCreate();
 	commandProcessingQueueCreate();
 	printf("Estimulacion Luminosa con freeRTOS y sAPI.\n");
 	//printf( "Imgrese un caracter:\n" );
 
-	//uartWriteByte(UART_USB,"\n**Seleccione una opcion**");
-	//uartWriteByte(UART_USB, "\n ROJO(R0) AMARILLO(A1) VERDE(V2) AZUL(A3) VIOLETA(VI4) CELESTE(C5):");
+	uartWriteString(UART_USB,miTexto);
+	uartWriteString(UART_USB,miTexto1);
+	uartWriteString(UART_USB,miTexto2);
+
+	//uartWriteByte(UART_USB, "");
 
 	//printf("\n ingrese el factor ejemplo: f100");
 

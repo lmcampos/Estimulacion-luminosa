@@ -1,30 +1,32 @@
 #include "led.h"
 
-void ledAddNodeEnd(led_t * l, gpioMap_t gpio, uint16_t fact, uint16_t dCycle) {
 
-	led_t * aux;
-	aux = (led_t *) malloc(sizeof(led_t));
+void ledAddNodeEnd(struct led **l, gpioMap_t gpio, uint16_t fact,
+		uint16_t dCycle) {
+
+	struct led * aux = NULL, *lis = NULL;
+	lis = *l;
+	char miTexto[] = "\n Error en la asignacion de memoria a estructura LED";
+
+	aux = (struct led *) malloc(sizeof(struct led));
+	if (aux == NULL)
+		uartWriteString(UART_USB, miTexto);
 
 	aux->colorLed = gpio;
 	aux->factor = fact;
 	aux->dutyCycle = dCycle;
 
-	if (led == NULL) {
 
-		aux->sig = l;
-		l = aux;
-		free(aux);
+	if (*l == NULL) {
+		aux->sig = *l;
+		*l = aux;
 
 	} else {
-		while (l->sig != NULL) {
-			l = l->sig;
+		while (lis->sig != NULL) {
+			lis = lis->sig;
 		}
-		aux->sig = l->sig;
-		l->sig= aux;
-		free(aux);
-
-
+		aux->sig = lis->sig;
+		lis->sig = aux;
 	}
-
 }
 
