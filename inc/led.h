@@ -12,6 +12,9 @@ struct led {
 	struct led * sig;
 };
 struct led * pLed;
+
+//pAux = pLed;
+
 // agrego un nodo al final de la lista
 void ledAddNodeEnd(struct led ** pLed, gpioMap_t gpio, uint16_t fact, uint16_t dCycle);
 
