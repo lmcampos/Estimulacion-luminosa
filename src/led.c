@@ -29,4 +29,20 @@ void ledAddNodeEnd(struct led **l, gpioMap_t gpio, uint16_t fact,
 		lis->sig = aux;
 	}
 }
+//borra por completo la lista
+void ledDeleteNodeInit(struct led **l) {
+	struct led * aux, *ant, *lis = *l;
+	char miTexto2[] = "\n La lista se encuentra vacia";
 
+	if (*l == NULL) {
+		uartWriteString(UART_USB, miTexto2);
+	} else {
+		while (*l != NULL) {
+			aux = *l;
+			*l = aux->sig;
+			gpioWrite(aux->colorLed, OFF);
+			free(aux);
+		}
+
+	}
+}

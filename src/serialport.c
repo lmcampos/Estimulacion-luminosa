@@ -64,7 +64,7 @@ void serialPortQueueCreate(void){
 	 while(1);/*Se queda bloquedo el sistema hasta que venga el personal de mantenimiento*/
  }
 }
-
+//interrupción de recepción de caracteres por el puerto Serial USB
 void serialPortReceiveData(void *noUsado){
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	  char data;

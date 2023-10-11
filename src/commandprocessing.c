@@ -128,7 +128,9 @@ void commandProcessingTask(void * taskParmPtr) {
 			    printf("\n el factor es:%d",factor);
 			    ledAddNodeEnd(&pLed, cLed, factor, 0);
 			    cLed=110;// poner un valor invalido porque queda grabado para el proxímo ingreso de datos
-
+			    break;
+			case 'b':
+				ledDeleteNodeInit(&pLed);
 				break;
 			case 'i':
 				interruptTimerInit();
@@ -144,7 +146,7 @@ void commandProcessingTask(void * taskParmPtr) {
 }
 
 uint16_t commandProcessingConverterCaracterToDecimal(char * pointer, uint8_t length) {
-	uint32_t num=0;
+			uint32_t num=0;
 		    uint32_t digito = 0;
 		    uint32_t tam = length;
 		    uint32_t expo = 0;

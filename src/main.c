@@ -41,11 +41,19 @@
 int main(void) {
 	boardConfig();
 	gpioConfig(GPIO0, GPIO_OUTPUT);
+	gpioConfig(GPIO1, GPIO_OUTPUT);
+	gpioConfig(GPIO2, GPIO_OUTPUT);
+	gpioConfig(GPIO3, GPIO_OUTPUT);
+	gpioConfig(GPIO4, GPIO_OUTPUT);
+	gpioConfig(GPIO5, GPIO_OUTPUT);
+	gpioConfig(GPIO6, GPIO_OUTPUT);
+
 	serialPortForInterruptInit();
 
 	char miTexto [] = "\n ROJO(r0) AMARILLO(a1) VERDE(v2) AZUL(A3) VIOLETA(VI4) CELESTE(c5):";
 	char miTexto1 [] = "\n Inciar estimulacion (i):";
 	char miTexto2 [] = "\n Detener la estimulacion (d):";
+	char miTexto3[] = "\n Borrar la secuencia de leds por completo(b):";
 
 	// creación de las colas
 	serialPortQueueCreate();
@@ -56,6 +64,7 @@ int main(void) {
 	uartWriteString(UART_USB,miTexto);
 	uartWriteString(UART_USB,miTexto1);
 	uartWriteString(UART_USB,miTexto2);
+	uartWriteString(UART_USB,miTexto3);
 
 	//uartWriteByte(UART_USB, "");
 

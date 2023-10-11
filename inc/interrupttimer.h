@@ -26,8 +26,14 @@ extern "C" {
 
 /*=====[Definition macros of public constants]===============================*/
 #define NOVENTAPORCIENTO 450000  //
-#define COMPLETECYCLE_PERIODO 1000 //1 mseg
+
+#define VEINTICINCOPORCIENTO   250 		//0.25mseg
+#define CINCUENTAPORCIENTO     500 		//0.5mseg
+#define SETENTAYCINCOPORCIENTO 750		//0.75 mseg
+#define COMPLETECYCLE_PERIODO  1000 	//1 mseg
+
 #define INTERRUPCION 100 //para llegar
+
 
 
 /*=====[Public function-like macros]=========================================*/
@@ -39,8 +45,18 @@ extern "C" {
 /*=====[Prototypes (declarations) of public functions]=======================*/
 void interruptTimerInit(void);
 void interruptTimerDiseable(void);
+//TIMER0
 void timer0Periodo(void* ptr);
+//void timer0CompareMatch0(void *ptr);
 void timer0CompareMatch1(void *ptr);
+void timer0CompareMatch2(void *ptr);
+void timer0CompareMatch3(void *ptr);
+//TIMER1
+void timer1Periodo(void* ptr);
+void timer1CompareMatch1(void *ptr);
+void timer1CompareMatch2(void *ptr);
+void timer1CompareMatch3(void *ptr);
+
 
 /*=====[Prototypes (declarations) of public interrupt functions]=============*/
 
