@@ -29,8 +29,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-/** @file 	commandprocessing.c.c
- ** @brief 	Funciones relacionadas a la interpretación de los comandos recebidos por parte de los usuarios
+/** @file 	interrupttimer.c
+ ** @brief 	Implementacioón de los servicios de interrupción correspondiente a los Timer y sus canales
  **
  **| REV | YYYY.MM.DD | Autor               | Descripción de los cambios                              |
  **|-----|------------|---------------------|---------------------------------------------------------|
@@ -70,10 +70,10 @@ void interruptTimerInit(void) {
 	Timer_EnableCompareMatch(TIMER1, TIMERCOMPAREMATCH1,
 				Timer_microsecondsToTicks(VEINTICINCOPORCIENTO), timer1CompareMatch1);
 
-	/*
-	Timer_EnableCompareMatch(TIMER1, TIMERCOMPAREMATCH2,
-					Timer_microsecondsToTicks(CINCUENTAPORCIENTO), timer1CompareMatch2);
 
+	Timer_EnableCompareMatch(TIMER1, TIMERCOMPAREMATCH2,
+					Timer_microsecondsToTicks(NOVENTAYOCHOPORCIENTO), timer1CompareMatch2);
+	/*
 	Timer_EnableCompareMatch(TIMER1, TIMERCOMPAREMATCH3,
 					Timer_microsecondsToTicks(SETENTAYCINCOPORCIENTO), timer1CompareMatch3);*/
 

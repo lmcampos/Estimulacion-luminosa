@@ -51,7 +51,7 @@ gpioMap_t gpio[] = { LED1, LED2, LED3, GPIO3, GPIO4, GPIO5};
 void commandProcessingQueueCreate(void) {
 	processingComandQueue = xQueueCreate(SIZECOMMANDQUEUE, sizeof(char*));
 
-	if (processingComandQueue == NULL) {/*Si devolvio NULL es muy probable que no haya suficiente memoria para crear la cola*/
+	if (processingComandQueue == NULL) {/*Si devolvió NULL es muy probable que no haya suficiente memoria para crear la cola*/
 		printf("Error al crear la cola del procesamiento de comandos\n");
 		//gpioWrite(LED1, ON);
 		while (1)

@@ -25,12 +25,17 @@ extern "C" {
 #endif
 
 /*=====[Definition macros of public constants]===============================*/
-#define NOVENTAPORCIENTO 450000  //
+//#define NOVENTAPORCIENTO 450000  //
 
 #define VEINTICINCOPORCIENTO   250 		//0.25mseg
 #define CINCUENTAPORCIENTO     500 		//0.5mseg
 #define SETENTAYCINCOPORCIENTO 750		//0.75 mseg
 #define COMPLETECYCLE_PERIODO  1000 	//1 mseg
+#define NOVENTAYNUEVEPORCIENTO 999      //????
+#define NOVENTAPORCIENTO       900
+#define NOVENTAYCINCOPORCIENTO 950
+#define NOVENTAYOCHOPORCIENTO  980
+#define UNOPORCIENTO            1
 
 #define INTERRUPCION 100 //para llegar
 
