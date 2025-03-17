@@ -47,6 +47,7 @@ int main(void) {
 	gpioConfig(GPIO4, GPIO_OUTPUT);
 	gpioConfig(GPIO5, GPIO_OUTPUT);
 	gpioConfig(GPIO6, GPIO_OUTPUT);
+	gpioConfig(GPIO7, GPIO_OUTPUT);
 
 	serialPortForInterruptInit();
 

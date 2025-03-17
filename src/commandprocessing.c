@@ -138,6 +138,11 @@ void commandProcessingTask(void * taskParmPtr) {
 			case 'd':
 				interruptTimerDiseable();
 				break;
+
+			case '#'://duty Cycle 1
+
+				break;
+
 			}
 
 		}

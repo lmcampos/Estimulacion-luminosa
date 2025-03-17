@@ -61,6 +61,10 @@ void timer1Periodo(void* ptr);
 void timer1CompareMatch1(void *ptr);
 void timer1CompareMatch2(void *ptr);
 void timer1CompareMatch3(void *ptr);
+//TIMER 2
+void timer2Periodo(void* ptr);
+void timer2CompareMatch1(void *ptr);
+void timer2CompareMatch2(void *ptr);
 
 
 /*=====[Prototypes (declarations) of public interrupt functions]=============*/

@@ -73,9 +73,17 @@ void interruptTimerInit(void) {
 
 	Timer_EnableCompareMatch(TIMER1, TIMERCOMPAREMATCH2,
 					Timer_microsecondsToTicks(NOVENTAYOCHOPORCIENTO), timer1CompareMatch2);
-	/*
+
 	Timer_EnableCompareMatch(TIMER1, TIMERCOMPAREMATCH3,
-					Timer_microsecondsToTicks(SETENTAYCINCOPORCIENTO), timer1CompareMatch3);*/
+					Timer_microsecondsToTicks(NOVENTAYOCHOPORCIENTO), timer1CompareMatch3);
+
+	Timer_Init(TIMER2, Timer_microsecondsToTicks(COMPLETECYCLE_PERIODO),
+					timer2Periodo);
+	Timer_EnableCompareMatch(TIMER2, TIMERCOMPAREMATCH1,
+						Timer_microsecondsToTicks(NOVENTAYOCHOPORCIENTO), timer2CompareMatch1);
+	Timer_EnableCompareMatch(TIMER2, TIMERCOMPAREMATCH2,
+							Timer_microsecondsToTicks(NOVENTAYOCHOPORCIENTO), timer2CompareMatch2);
+
 
 }
 void interruptTimerDiseable(void) {
@@ -85,15 +93,15 @@ void interruptTimerDiseable(void) {
 
 
 void timer0Periodo(void* ptr) {
-	/*======== Interrupción de periodica de COMPLETECYCLE_PERIODO============*/
+	/*======== Interrupción periodica con periodo de COMPLETECYCLE_PERIODO= 1 mseg ============*/
 	/*======== Con esta interrupciòn generamos una señal PWM con periodo de 1[seg]=========*/
 	static uint8_t i = 0;
 
-		if (i == 0) {
-			pAux = pLed; //Error---> cada vez que ingresa a la interrupción me asigna nuevamente la direcciòn del primer nodo
-			i = 1;
-		}
-		if (pAux != NULL) {
+	if (i == 0) {
+		pAux = pLed; //Error---> cada vez que ingresa a la interrupción me asigna nuevamente la direcciòn del primer nodo
+		i = 1;
+	}
+	if (pAux != NULL) {
 		gpioWrite(pAux->colorLed, ON);
 
 		pAux->dutyCycle = pAux->dutyCycle + pAux->factor;
@@ -139,11 +147,27 @@ void timer0CompareMatch3(void *ptr){
 
 	gpioToggle( GPIO2 );
 }
-void timer1Periodo(void* ptr)
-{
+void timer1Periodo(void* ptr) {
 	//gpioToggle( GPIO3 );
+	static uint16_t count_interrup = 0; // cuenta la cantidad de interrupciones para incrementar el ciclo de trabajo
+	static uint16_t dutyCycle = 0;
+
 	gpioWrite(GPIO3, ON);
+	gpioWrite(GPIO4, ON);
 	gpioWrite(GPIO5, ON);
+
+	//esta porción de código aumenta el ancho de pulso por el GPIO01 con el tiempo automáticamente.
+	count_interrup = count_interrup + 1;
+
+	if (count_interrup >= 30) {
+		count_interrup = 0;
+		dutyCycle = dutyCycle + 1;
+		if (dutyCycle <= 1000) {
+			Timer_SetCompareMatch(TIMER1, TIMERCOMPAREMATCH1,
+					Timer_microsecondsToTicks(dutyCycle));
+		} else
+			dutyCycle = 0;
+	}
 
 }
 void timer1CompareMatch1(void *ptr)
@@ -152,11 +176,22 @@ void timer1CompareMatch1(void *ptr)
 }
 void timer1CompareMatch2(void *ptr)
 {
-	gpioWrite(GPIO5, OFF);
+	gpioWrite(GPIO4, OFF);
 }
 void timer1CompareMatch3(void *ptr)
-{
-	gpioToggle( GPIO6 );
+{	gpioWrite(GPIO5, OFF);
+
+}
+
+void timer2Periodo(void* ptr){
+	gpioWrite(GPIO6, ON);
+	gpioWrite(GPIO7, ON);
+}
+void timer2CompareMatch1(void *ptr){
+	gpioWrite(GPIO6, OFF);
+}
+void timer2CompareMatch2(void *ptr){
+	gpioWrite(GPIO7, OFF);
 }
 /*
 }

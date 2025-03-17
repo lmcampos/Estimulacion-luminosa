@@ -84,11 +84,11 @@ void serialPortTaskStorageCommand(void * taskParmPtr) {
 	char *pCommand = NULL;
 	uint8_t index = 0;
 	char data;
-	pCommand=command;
+	pCommand = command;
 
 	while (TRUE) {
 		if (xQueueReceive(receiveQueue, &data, portMAX_DELAY) == pdTRUE) {
-			*(command+index)=data;
+			*(command+index) = data;
 
 			//*(pCommand+index) = data;
 			if (*(command+index) == '\n') {
