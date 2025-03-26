@@ -16,7 +16,8 @@
 /*=====[Inclusions of public function dependencies]==========================*/
 #include "sapi.h"
 #include "sapi_timer.h"
-
+#include "bibliotecasFREERTOS.h"
+#include "commandqueue.h"
 
 /*=====[C++ - begin]=========================================================*/
 
@@ -39,6 +40,12 @@ extern "C" {
 
 #define INTERRUPCION 100 //para llegar
 
+#define LED_RED   GPIO6
+#define LED_AMBAR GPIO7
+#define LED_BLUE  GPIO5
+#define LED_GREEN GPIO4
+#define LED_CYAN  GPIO3
+#define LED_GPIO
 
 
 /*=====[Public function-like macros]=========================================*/
@@ -46,6 +53,8 @@ extern "C" {
 //char colores[][10] = {"ROJO", "AMARILLO", "VERDE", "AZUL", "VIOLETA"," CELESTE"};
 //gpioMap_t gpio[] = { GPIO0, GPIO1, GPIO2, GPIO3, GPIO4, GPIO5};
 
+// Declaración del semáforo que indica la finalización del estímulo.
+extern SemaphoreHandle_t xStimDoneSemaphore;
 
 /*=====[Prototypes (declarations) of public functions]=======================*/
 void interruptTimerInit(void);
@@ -65,6 +74,14 @@ void timer1CompareMatch3(void *ptr);
 void timer2Periodo(void* ptr);
 void timer2CompareMatch1(void *ptr);
 void timer2CompareMatch2(void *ptr);
+//TIMER3
+void interrupt_Timer3Init(uint16_t);
+void interrupt_timer3Periodo(void *ptr);
+
+void Semaphore_Init(void);
+void interrupt_updateDutyCycleForLEDs(StimCommand cmd);
+void interrupt_pwmInitForLEDs(void);
+
 
 
 /*=====[Prototypes (declarations) of public interrupt functions]=============*/

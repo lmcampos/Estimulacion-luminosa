@@ -1,4 +1,5 @@
 #include "led.h"
+#include <stdlib.h>
 
 
 void ledAddNodeEnd(struct led **l, gpioMap_t gpio, uint16_t fact,

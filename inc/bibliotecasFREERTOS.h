@@ -20,6 +20,7 @@
 #include "task.h"
 #include "sapi.h"
 #include "queue.h"
+#include "semphr.h"
 //#include "timers.h"
 
 /*=====[C++ - begin]=========================================================*/

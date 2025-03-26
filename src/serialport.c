@@ -41,22 +41,25 @@
 #include "serialport.h"
 #include "bibliotecasFREERTOS.h"
 #include "commandprocessing.h"
+#include "commandqueue.h"
 
-#define SIZEQUEUERECEIVE 100
+
 static QueueHandle_t receiveQueue;
 
 
 void serialPortForInterruptInit(void){
 			/* Inicializar la UART_USB  */
-			uartConfig(UART_USB, 115200);
+			uartConfig(UART_232, 115200);
 			// Seteo un callback al evento de recepcion y habilito su interrupcion
-			uartCallbackSet(UART_USB, UART_RECEIVE, serialPortReceiveData, NULL);
+			uartCallbackSet(UART_232, UART_RECEIVE, serialPortReceiveData, NULL);
 			// Habilito todas las interrupciones de UART_232
-			uartInterrupt(UART_USB, TRUE);
+			uartInterrupt(UART_232, TRUE);
+			/* Inicializar la UART_USB  */
+			uartConfig(UART_USB, 115200);
 	}
 
 void serialPortQueueCreate(void){
- receiveQueue = xQueueCreate(SIZEQUEUERECEIVE,sizeof(char));
+ receiveQueue = xQueueCreate(SIZERECEIVEQUEUE,sizeof(char));
 
  if(receiveQueue == NULL){/*Si devolvio NULL es muy probable que no haya suficiente memoria para crear la cola*/
 	 printf("Error en la creación de la cola de recepción de comandos\n");
@@ -69,38 +72,43 @@ void serialPortReceiveData(void *noUsado){
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	  char data;
 
-	  data = uartRxRead(UART_USB);
+	  data = uartRxRead(UART_232);
 	  uartWriteByte(UART_USB, data);
-	  uartWriteString(UART_USB, "\n");
+	  //uartWriteString(UART_USB, "\n");
 	  xQueueSendFromISR(receiveQueue, &data, &xHigherPriorityTaskWoken);
 	  if (xHigherPriorityTaskWoken == pdTRUE) {
 	  		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	  	}
 
 }
+
 void serialPortTaskStorageCommand(void * taskParmPtr) {
 
-	char command[10];
-	char *pCommand = NULL;
+	char command[MAX_COMMAND_LENGTH];
 	uint8_t index = 0;
 	char data;
-	pCommand = command;
 
 	while (TRUE) {
-		if (xQueueReceive(receiveQueue, &data, portMAX_DELAY) == pdTRUE) {
-			*(command+index) = data;
+		if (xQueueReceive(receiveQueue, &data, portMAX_DELAY) == pdPASS) {
+			command[index] = data;
 
 			//*(pCommand+index) = data;
-			if (*(command+index) == '\n') {
-				*(command+index) = '\0';
+			if (command[index] == '\n') {
+				command[index] = '\0';
 
-				//Envío el comando que se recibio
-				//así desbloqueo la tarea que realiza la interpretación del comando(proceso)
-				xQueueSend(processingComandQueue, &pCommand, portMAX_DELAY);
+				if (CommandQueue_Send(command, portMAX_DELAY)) {
+					//printf("Comando encolado desde serialport.c: [%s]\n",
+					//		command);
+				} else {
+					printf("Error al encolar comando.\n");
+				}
 
 				index = 0;
 			} else {
 				index++;
+				if (index >= MAX_COMMAND_LENGTH - 1) { // Evitar desbordamiento
+					index = 0;
+				}
 			}
 		}
 	}

@@ -24,12 +24,13 @@
 extern "C" {
 #endif
 
-/*=====[Definition macros of public constants]===============================*/
-//Tamaño de la cola que enviará puntero
-#define SIZECOMMANDQUEUE 100
+
 /*=====[Public function-like macros]=========================================*/
-/*=====[Definitions of public data types]====================================*/
-QueueHandle_t processingComandQueue;
+
+
+extern QueueHandle_t processingCommandQueue;
+
+
 
 /*=====[Prototypes (declarations) of public functions]=======================*/
 //task
@@ -37,6 +38,11 @@ void commandProcessingQueueCreate(void);
 uint16_t commandProcessingConverterCaracterToDecimal(char * pointer, uint8_t length);
 //esta tarea realiza el procesamiento relacionado a la interpretación del comando se recibio
 void commandProcessingTask(void * taskParmPtr);
+void commandProcessingExecutionTask(void * taskParmPtr);
+// Función para obtener timestamp (en milisegundos), usando xTaskGetTickCount
+uint32_t commandProcessingGetTimestampMs(void);
+
+
 /*=====[Prototypes (declarations) of public interrupt functions]=============*/
 
 

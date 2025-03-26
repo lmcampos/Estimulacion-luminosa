@@ -14,6 +14,9 @@
 #include "heartbeat.h"
 #include "serialport.h"
 #include "commandprocessing.h"
+#include "commandqueue.h"
+#include "interrupttimer.h"
+
 
 
 /*=====[Inclusions of private function dependencies]=========================*/
@@ -49,27 +52,16 @@ int main(void) {
 	gpioConfig(GPIO6, GPIO_OUTPUT);
 	gpioConfig(GPIO7, GPIO_OUTPUT);
 
+	// configuración del puerto serial para la recepción de datos con interrupción
 	serialPortForInterruptInit();
-
-	char miTexto [] = "\n ROJO(r0) AMARILLO(a1) VERDE(v2) AZUL(A3) VIOLETA(VI4) CELESTE(c5):";
-	char miTexto1 [] = "\n Inciar estimulacion (i):";
-	char miTexto2 [] = "\n Detener la estimulacion (d):";
-	char miTexto3[] = "\n Borrar la secuencia de leds por completo(b):";
-
-	// creación de las colas
+	// creación de las colas y semaforos
 	serialPortQueueCreate();
-	commandProcessingQueueCreate();
+	CommandQueue_Init();
+	Semaphore_Init();
+	//incializo los temporizadores
+	//interrupt_pwmInitForLEDs();
 	printf("Estimulacion Luminosa con freeRTOS y sAPI.\n");
-	//printf( "Imgrese un caracter:\n" );
 
-	uartWriteString(UART_USB,miTexto);
-	uartWriteString(UART_USB,miTexto1);
-	uartWriteString(UART_USB,miTexto2);
-	uartWriteString(UART_USB,miTexto3);
-
-	//uartWriteByte(UART_USB, "");
-
-	//printf("\n ingrese el factor ejemplo: f100");
 
 
 	xTaskCreate(heartBeat,                     // Funcion de la tarea a ejecutar
@@ -90,12 +82,21 @@ int main(void) {
 
 	xTaskCreate(commandProcessingTask,         // Funcion de la tarea a ejecutar
 			(const char *) "Tarea que procesa el comando recibido", // Nombre de la tarea como String amigable para el usuario
-			configMINIMAL_STACK_SIZE * 2, // Cantidad de stack de la tarea
+			configMINIMAL_STACK_SIZE * 4, // Cantidad de stack de la tarea
 			0,                          // Parametros de tarea
 			tskIDLE_PRIORITY + 3,         // Prioridad de la tarea
 			0                         // Puntero a la tarea creada en el sistema
 			);
+	// Crea la tarea de ejecución (ejecución de comandos y envío de ACK_DONE).
+	 xTaskCreate(commandProcessingExecutionTask,
+			 (const char *) "CmdExec",
+			 configMINIMAL_STACK_SIZE *2 ,
+			 0,
+			 tskIDLE_PRIORITY + 3,
+			 0
+			 );
 
+	 printf("LLego a crear las tareas.\n");
 	vTaskStartScheduler();
 	while (TRUE) {
 

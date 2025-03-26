@@ -42,134 +42,131 @@
 /*==================[inlcusiones]============================================*/
 #include "commandprocessing.h"
 #include "interrupttimer.h"
+#include "commandqueue.h"
 #include "led.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-//struct led * pled = NULL;
+// Doble buffer para almacenar dos comandos parsedos
+#define DOUBLE_BUFFER_SIZE 2
 
-gpioMap_t gpio[] = { LED1, LED2, LED3, GPIO3, GPIO4, GPIO5};
-                   //ROJO(R0) AMARILLO(A1) VERDE(V2) AZUL(A3) VIOLETA(VI4) CELESTE(C5):
-void commandProcessingQueueCreate(void) {
-	processingComandQueue = xQueueCreate(SIZECOMMANDQUEUE, sizeof(char*));
+static StimCommand doubleBuffer[DOUBLE_BUFFER_SIZE];
+// Índice que indica el comando actualmente en ejecución (0 o 1)
+static uint8_t currentBufferIndex = 0;
 
-	if (processingComandQueue == NULL) {/*Si devolvió NULL es muy probable que no haya suficiente memoria para crear la cola*/
-		printf("Error al crear la cola del procesamiento de comandos\n");
-		//gpioWrite(LED1, ON);
-		while (1)
-			;/*Se queda bloquedo el sistema hasta que venga el personal de mantenimiento*/
-	}
+// Semáforos para sincronizar el doble buffering
+SemaphoreHandle_t xNextCommandReady = NULL;   // Se da cuando se parsea y almacena el siguiente comando
+SemaphoreHandle_t xExecutionDone = NULL;        // Se da cuando termina la ejecución del comando actual
+
+
+// Función para obtener timestamp (en milisegundos), usando xTaskGetTickCount
+uint32_t commandProcessingGetTimestampMs(void) {
+    return xTaskGetTickCount() * portTICK_PERIOD_MS;
 }
 
+
+// Tarea que procesa comandos: recibe la cadena, la parsea y la almacena en el doble buffer.
 void commandProcessingTask(void * taskParmPtr) {
 
-	char *pCommandToProcess = NULL;
-	uint16_t factor;
-	gpioMap_t cLed;
-	uint8_t j;
+	char commandToParse[MAX_COMMAND_LENGTH];
+	StimCommand stimCmd;
+	int nextIndex;
+	static bool initialHandshakeDone = false;
 
-	while (TRUE) {
-		if (xQueueReceive(processingComandQueue, &pCommandToProcess,
-		portMAX_DELAY) == pdTRUE) {
-			j = *(pCommandToProcess + 1) - '0';
-			switch (*(pCommandToProcess)) {
-			case 'r':
-				if (*(pCommandToProcess + 1) == '0') {
-					// debo asignar el gpio cnectado al led rojo
-					cLed = gpio[j];
-				} else {
-					// comando invalido
-				}
-				break;
-			case 'a':
-				if (*(pCommandToProcess + 1) == '1') {
-					// debo asignar el gpio cnectado al led amarillo
-					cLed = gpio[j];
-				} else {
-					// comando invalido
-				}
-				break;
-			case 'v':
-				if (*(pCommandToProcess + 1) == '2') {
-					// debo asignar el gpio cnectado al led verde
-					cLed = gpio[j];
-				} else {
-					// comando invalido
-				}
-				break;
-			case 'A':
-				if (*(pCommandToProcess + 1) == '3') {
-					// debo asignar el gpio cnectado al led azul
-					cLed = gpio[j];
-
-				} else {
-					// comando invalido
-				}
-				break;
-			case 'V':
-				if (*(pCommandToProcess + 1) == '4') {
-					// debo asignar el gpio cnectado al led violeta
-					cLed = gpio[j];
-				} else {
-					// comando invalido
-				}
-				break;
-
-			case 'c':
-
-				if (*(pCommandToProcess + 1) == '5') {
-					// debo asignar el gpio cnectado al celeste
-					cLed = gpio[j];
-				} else {
-					// comando invalido
-				}
-				break;
-			case 'f':
-				factor = commandProcessingConverterCaracterToDecimal((pCommandToProcess+1), 4);
-				//uartWriteString(UART_USB, "\n El factor es:");
-			    printf("\n el factor es:%d",factor);
-			    ledAddNodeEnd(&pLed, cLed, factor, 0);
-			    cLed=110;// poner un valor invalido porque queda grabado para el proxímo ingreso de datos
-			    break;
-			case 'b':
-				ledDeleteNodeInit(&pLed);
-				break;
-			case 'i':
-				interruptTimerInit();
-				break;
-			case 'd':
-				interruptTimerDiseable();
-				break;
-
-			case '#'://duty Cycle 1
-
-				break;
-
-			}
-
-		}
+	// Crear semáforos
+	xNextCommandReady = xSemaphoreCreateBinary();
+	xExecutionDone = xSemaphoreCreateBinary();
+	if (xNextCommandReady == NULL || xExecutionDone == NULL) {
+		printf("Error al crear semáforos\n");
+		while (1)
+			;
 	}
 
+	while (1) {
+		while (1) {
+		        if (CommandQueue_Receive(commandToParse, portMAX_DELAY)) {
+		            printf("Comando recibido para parseo: [%s]\n", commandToParse);
+
+		            // Para el primer comando, si aún no se ha hecho el handshake inicial,
+		            // se almacena directamente en el slot actual y se envía READY2.
+		            if (!initialHandshakeDone) {
+		                if (CommandQueue_parseStimCommand(commandToParse, &stimCmd)) {
+		                    doubleBuffer[currentBufferIndex] = stimCmd;
+		                    uartWriteString(UART_232, "READY2\n");
+		                    initialHandshakeDone = true;
+		                    // Notifica que el comando está listo para ejecutarse.
+		                    xSemaphoreGive(xNextCommandReady);
+		                } else {
+		                    printf("Error al parsear el comando: %s\n", commandToParse);
+		                }
+		            } else {
+		                // Para comandos subsiguientes, se almacena en el slot opuesto.
+		                nextIndex = currentBufferIndex ^ 1;  // Alterna entre 0 y 1.
+		                if (CommandQueue_parseStimCommand(commandToParse, &stimCmd)) {
+		                    doubleBuffer[nextIndex] = stimCmd;
+		                    // Espera a que la tarea de ejecución termine la ejecución del comando actual.
+		                    xSemaphoreTake(xExecutionDone, portMAX_DELAY);
+		                    // Ahora cambia el índice para que el nuevo comando se convierta en el activo.
+		                    currentBufferIndex ^= 1;
+		                    // Notifica a la tarea de ejecución que ya hay un nuevo comando listo.
+		                    xSemaphoreGive(xNextCommandReady);
+		                } else {
+		                    printf("Error al parsear el comando: %s\n", commandToParse);
+		                }
+		            }
+		        }
+		    }
+		}
 }
 
-uint16_t commandProcessingConverterCaracterToDecimal(char * pointer, uint8_t length) {
-			uint32_t num=0;
-		    uint32_t digito = 0;
-		    uint32_t tam = length;
-		    uint32_t expo = 0;
-		    uint32_t pot=1;
-		    uint32_t i;
+// Tarea de ejecución: toma el comando actual del doble buffer y lo ejecuta, enviando ACK_DONE al finalizar.
+void commandProcessingExecutionTask(void * taskParmPtr) {
+	char ackMessage[50];
+	StimCommand execCmd;
+	uint32_t timestampInicio, timestampACK, latency;
+	// Crear el semáforo si aún no existe.
 
-		    for(i=tam ;i>0;--i)
-		    {
-		        digito=(uint32_t) (*(pointer+(i-1))-48);
+	while (1) {
+		// Espera a que se notifique que el siguiente comando ya está listo.
+		if (xSemaphoreTake(xNextCommandReady, portMAX_DELAY) == pdTRUE) {
+			// Toma el comando actual del doble buffer.
+			execCmd = doubleBuffer[currentBufferIndex];
+			/*printf("Ejecutando comando: ID=%hu, Duration=%hu, LED Red=%hu, LED Green=%hu, LED Azul=%hu, LED Ambar=%hu, LED Cyan=%hu\n",
+			 execCmd.id,
+			 execCmd.duration,
+			 execCmd.led_red_dc,
+			 execCmd.led_green_dc,
+			 execCmd.led3_azul_dc,
+			 execCmd.led3_ambar_dc,
+			 execCmd.led3_cyan_dc);
+			 */
+			// Registra el timestamp de inicio de ejecución
+			timestampInicio = commandProcessingGetTimestampMs();
+			// Ejecuta la estimulación. Se simula con un delay.
+			//vTaskDelay(pdMS_TO_TICKS(execCmd.duration));
 
-		        expo = tam-i;
-		        pot=1;
-		        while( expo > 0)//para sacar la potencia
-		        {
-		                pot  = pot*10  ;
-		                expo = expo-1 ;
-		        }
-		    num = num+digito*pot;
-		    }
-		    return num;
+			// Actualiza los PWM según el comando recibido.
+			//interrupt_updateDutyCycleForLEDs(execCmd);
+			// Configura los PWM según el comando.
+			//setPWMForCommand(execCmd);
+
+			// Inicia el temporizador hardware en modo one-shot para la duración de la estimulación.
+			interrupt_Timer3Init(execCmd.duration);
+			//startHardwareDurationTimer(execCmd.duration);
+			//printf("Ejecutando comando: ID=%hu, Duration=%hu\n", execCmd.id,
+			//		execCmd.duration);
+
+			// Espera a que la ISR (del timer hardware) libere el semáforo
+			if (xSemaphoreTake(xStimDoneSemaphore, portMAX_DELAY) == pdTRUE) {
+				timestampACK = commandProcessingGetTimestampMs();
+				latency = timestampACK - timestampInicio;
+				sprintf(ackMessage, "ACK_DONE,%hu,%lu\n", execCmd.id, latency);
+				uartWriteString(UART_232, ackMessage);
+				printf("%s enviado - Comando ejecutado\n", ackMessage);
+				xSemaphoreGive(xExecutionDone);
+			}
+		}
 	}
+}
+

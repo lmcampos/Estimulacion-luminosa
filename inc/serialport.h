@@ -24,7 +24,7 @@ extern "C" {
 #endif
 
 /*=====[Definition macros of public constants]===============================*/
-
+#define SIZERECEIVEQUEUE 50
 /*=====[Public function-like macros]=========================================*/
 /*=====[Definitions of public data types]====================================*/
 
