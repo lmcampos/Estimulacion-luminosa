@@ -32,6 +32,7 @@ extern "C" {
 #define CINCUENTAPORCIENTO     500 		//0.5mseg
 #define SETENTAYCINCOPORCIENTO 750		//0.75 mseg
 #define COMPLETECYCLE_PERIODO  1000 	//1 mseg
+#define COMPLETECYCLE_PERIODO_MAS  1010
 #define NOVENTAYNUEVEPORCIENTO 999      //????
 #define NOVENTAPORCIENTO       900
 #define NOVENTAYCINCOPORCIENTO 950
@@ -40,43 +41,37 @@ extern "C" {
 
 #define INTERRUPCION 100 //para llegar
 
-#define LED_RED   GPIO6
-#define LED_AMBAR GPIO7
-#define LED_BLUE  GPIO5
-#define LED_GREEN GPIO4
-#define LED_CYAN  GPIO3
-#define LED_GPIO
-
+// Asociación de los LEDs con los GPIOs
+#define LED_CYAN_STIM        GPIO3
+#define LED_GREEN_STIM       GPIO4
+#define LED_BLUE_STIM        GPIO5
+#define LED_RED_STIM         GPIO6
+#define LED_AMBAR_STIM       GPIO7
+#define LED_INFRARROJO_STIM  GPIO8 // para el led infrarrojo
+#define PIN_TRIGGER          GPIO0
 
 /*=====[Public function-like macros]=========================================*/
 /*=====[Definitions of public data types]====================================*/
-//char colores[][10] = {"ROJO", "AMARILLO", "VERDE", "AZUL", "VIOLETA"," CELESTE"};
-//gpioMap_t gpio[] = { GPIO0, GPIO1, GPIO2, GPIO3, GPIO4, GPIO5};
 
+// Variables globales para el modo estímulo:
+extern volatile bool stimActive;
+extern volatile bool firstCycle;
+extern volatile uint32_t red_ticks;
+extern volatile uint32_t gree_ticks;
+extern volatile uint32_t azul_ticks;
+extern volatile uint32_t ambar_ticks;
+extern volatile uint32_t cyan_ticks;
+
+  // Define el pin de aviso
 // Declaración del semáforo que indica la finalización del estímulo.
 extern SemaphoreHandle_t xStimDoneSemaphore;
 
 /*=====[Prototypes (declarations) of public functions]=======================*/
 void interruptTimerInit(void);
 void interruptTimerDiseable(void);
-//TIMER0
-void timer0Periodo(void* ptr);
-//void timer0CompareMatch0(void *ptr);
-void timer0CompareMatch1(void *ptr);
-void timer0CompareMatch2(void *ptr);
-void timer0CompareMatch3(void *ptr);
-//TIMER1
-void timer1Periodo(void* ptr);
-void timer1CompareMatch1(void *ptr);
-void timer1CompareMatch2(void *ptr);
-void timer1CompareMatch3(void *ptr);
-//TIMER 2
-void timer2Periodo(void* ptr);
-void timer2CompareMatch1(void *ptr);
-void timer2CompareMatch2(void *ptr);
-//TIMER3
+
+
 void interrupt_Timer3Init(uint16_t);
-void interrupt_timer3Periodo(void *ptr);
 
 void Semaphore_Init(void);
 void interrupt_updateDutyCycleForLEDs(StimCommand cmd);
@@ -86,8 +81,17 @@ void interrupt_pwmInitForLEDs(void);
 
 /*=====[Prototypes (declarations) of public interrupt functions]=============*/
 
-
-
+//TIMER1
+void interrupt_timer1Periodo(void* ptr);
+void interrupt_timer1CompareMatch1(void *ptr);
+void interrupt_timer1CompareMatch2(void *ptr);
+void interrupt_timer1CompareMatch3(void *ptr);
+//TIMER 2
+void interrupt_timer2Periodo(void* ptr);
+void interrupt_timer2CompareMatch1(void *ptr);
+void interrupt_timer2CompareMatch2(void *ptr);
+//TIMER3
+void interrupt_timer3Periodo(void *ptr);
 /*=====[C++ - end]===========================================================*/
 
 #ifdef __cplusplus

@@ -23,9 +23,9 @@ typedef struct {
     uint16_t duration;
     uint16_t led_red_dc;
     uint16_t led_green_dc;
-    uint16_t led3_azul_dc;
-    uint16_t led3_ambar_dc;
-    uint16_t led3_cyan_dc;
+    uint16_t led_azul_dc;
+    uint16_t led_ambar_dc;
+    uint16_t led_cyan_dc;
 } StimCommand;
 
 /* Interfaz pública de la cola:

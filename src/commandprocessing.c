@@ -59,7 +59,8 @@ static uint8_t currentBufferIndex = 0;
 SemaphoreHandle_t xNextCommandReady = NULL;   // Se da cuando se parsea y almacena el siguiente comando
 SemaphoreHandle_t xExecutionDone = NULL;        // Se da cuando termina la ejecución del comando actual
 
-
+volatile bool stimActive = false;
+volatile bool firstCycle = true;
 // Función para obtener timestamp (en milisegundos), usando xTaskGetTickCount
 uint32_t commandProcessingGetTimestampMs(void) {
     return xTaskGetTickCount() * portTICK_PERIOD_MS;
@@ -146,8 +147,12 @@ void commandProcessingExecutionTask(void * taskParmPtr) {
 			// Ejecuta la estimulación. Se simula con un delay.
 			//vTaskDelay(pdMS_TO_TICKS(execCmd.duration));
 
+			// Antes de actualizar los duty cycles, activa el modo estímulo y resetea el flag del primer ciclo.
+			    stimActive = true;
+			    firstCycle = true;
+
 			// Actualiza los PWM según el comando recibido.
-			//interrupt_updateDutyCycleForLEDs(execCmd);
+			interrupt_updateDutyCycleForLEDs(execCmd);
 			// Configura los PWM según el comando.
 			//setPWMForCommand(execCmd);
 

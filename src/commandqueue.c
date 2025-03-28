@@ -45,9 +45,9 @@ int CommandQueue_parseStimCommand(const char * commandStr, StimCommand * cmd) {
                      &cmd->duration,
                      &cmd->led_red_dc,
                      &cmd->led_green_dc,
-                     &cmd->led3_azul_dc,
-                     &cmd->led3_ambar_dc,
-                     &cmd->led3_cyan_dc);
+                     &cmd->led_azul_dc,
+                     &cmd->led_ambar_dc,
+                     &cmd->led_cyan_dc);
     //printf("sscanf retornó %d\n", ret);
     return (ret == 7) ? 1 : 0;
 }

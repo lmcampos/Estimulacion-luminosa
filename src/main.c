@@ -46,11 +46,12 @@ int main(void) {
 	gpioConfig(GPIO0, GPIO_OUTPUT);
 	gpioConfig(GPIO1, GPIO_OUTPUT);
 	gpioConfig(GPIO2, GPIO_OUTPUT);
-	gpioConfig(GPIO3, GPIO_OUTPUT);
-	gpioConfig(GPIO4, GPIO_OUTPUT);
-	gpioConfig(GPIO5, GPIO_OUTPUT);
-	gpioConfig(GPIO6, GPIO_OUTPUT);
-	gpioConfig(GPIO7, GPIO_OUTPUT);
+	gpioConfig(LED_CYAN_STIM, GPIO_OUTPUT);
+	gpioConfig(LED_GREEN_STIM, GPIO_OUTPUT);
+	gpioConfig(LED_BLUE_STIM, GPIO_OUTPUT);
+	gpioConfig(LED_RED_STIM, GPIO_OUTPUT);
+	gpioConfig(LED_AMBAR_STIM, GPIO_OUTPUT);
+	gpioConfig(LED_INFRARROJO_STIM, GPIO_OUTPUT);
 
 	// configuración del puerto serial para la recepción de datos con interrupción
 	serialPortForInterruptInit();
@@ -59,7 +60,7 @@ int main(void) {
 	CommandQueue_Init();
 	Semaphore_Init();
 	//incializo los temporizadores
-	//interrupt_pwmInitForLEDs();
+	interrupt_pwmInitForLEDs();
 	printf("Estimulacion Luminosa con freeRTOS y sAPI.\n");
 
 
