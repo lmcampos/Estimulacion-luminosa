@@ -103,7 +103,9 @@ void Semaphore_Init(void) {
 
  }*/
 
-// Función para inicializar los PWM de los 5 LEDs. Solo se ejecuta al inicio del firmware.
+//Función para inicializar los PWM de los 5 LEDs y los leds infrarrojos.
+//Solo se ejecuta al inicio del firmware.
+
 void interrupt_pwmInitForLEDs(void) {
 	// Timer1: configura 4 canales para 4 LEDs.
 	Timer_Init(TIMER1, Timer_microsecondsToTicks(COMPLETECYCLE_PERIODO),
@@ -138,6 +140,9 @@ void interrupt_pwmInitForLEDs(void) {
 	gpioWrite(LED_CYAN_STIM, OFF);
 	// Me aseguro que el pin del trigger esté en bajo.
 	gpioWrite(PIN_TRIGGER, LOW);
+    //enciendo los leds infrarrojos
+	gpioWrite(LED_INFRARROJO_STIM_1, HIGH);
+	gpioWrite(LED_INFRARROJO_STIM_2, HIGH);
 
 }
 
