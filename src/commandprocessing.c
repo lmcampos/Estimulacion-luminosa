@@ -61,6 +61,7 @@ SemaphoreHandle_t xExecutionDone = NULL;        // Se da cuando termina la ejecu
 
 volatile bool stimActive = false;
 volatile bool firstCycle = true;
+
 // Función para obtener timestamp (en milisegundos), usando xTaskGetTickCount
 uint32_t commandProcessingGetTimestampMs(void) {
     return xTaskGetTickCount() * portTICK_PERIOD_MS;

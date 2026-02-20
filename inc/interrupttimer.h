@@ -42,13 +42,14 @@ extern "C" {
 #define INTERRUPCION 100 //para llegar
 
 // Asociación de los LEDs con los GPIOs
+#define PIN_TRIGGER          GPIO0
 #define LED_CYAN_STIM        GPIO3
 #define LED_GREEN_STIM       GPIO4
 #define LED_BLUE_STIM        GPIO5
 #define LED_RED_STIM         GPIO6
 #define LED_AMBAR_STIM       GPIO7
 #define LED_INFRARROJO_STIM  GPIO8 // para el led infrarrojo
-#define PIN_TRIGGER          GPIO0
+
 
 /*=====[Public function-like macros]=========================================*/
 /*=====[Definitions of public data types]====================================*/

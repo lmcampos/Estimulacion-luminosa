@@ -136,24 +136,39 @@ void interrupt_pwmInitForLEDs(void) {
 	gpioWrite(LED_BLUE_STIM, OFF);
 	gpioWrite(LED_AMBAR_STIM, OFF);
 	gpioWrite(LED_CYAN_STIM, OFF);
-	// Me aseguro que el pin de aviso esté en bajo.
+	// Me aseguro que el pin del trigger esté en bajo.
 	gpioWrite(PIN_TRIGGER, LOW);
+
 }
 
 // Función para actualizar los duty cycle de cada LED según el comando recibido.
 void interrupt_updateDutyCycleForLEDs(StimCommand cmd) {
 
-	red_ticks   = (cmd.led_red_dc == 0)   ? COMPLETECYCLE_PERIODO_MAS : cmd.led_red_dc;
-	green_ticks = (cmd.led_green_dc == 0) ? COMPLETECYCLE_PERIODO_MAS : cmd.led_green_dc;
-	azul_ticks  = (cmd.led_azul_dc == 0)  ? COMPLETECYCLE_PERIODO_MAS : cmd.led_azul_dc;
-	ambar_ticks  = (cmd.led_ambar_dc == 0)  ? COMPLETECYCLE_PERIODO_MAS : cmd.led_ambar_dc;
-	cyan_ticks  = (cmd.led_cyan_dc == 0)  ? COMPLETECYCLE_PERIODO_MAS : cmd.led_cyan_dc;
+	red_ticks =
+			(cmd.led_red_dc == 0) ? COMPLETECYCLE_PERIODO_MAS : cmd.led_red_dc;
+	green_ticks =
+			(cmd.led_green_dc == 0) ?
+					COMPLETECYCLE_PERIODO_MAS : cmd.led_green_dc;
+	azul_ticks =
+			(cmd.led_azul_dc == 0) ?
+					COMPLETECYCLE_PERIODO_MAS : cmd.led_azul_dc;
+	ambar_ticks =
+			(cmd.led_ambar_dc == 0) ?
+					COMPLETECYCLE_PERIODO_MAS : cmd.led_ambar_dc;
+	cyan_ticks =
+			(cmd.led_cyan_dc == 0) ?
+					COMPLETECYCLE_PERIODO_MAS : cmd.led_cyan_dc;
 
-	Timer_SetCompareMatch(TIMER1, TIMERCOMPAREMATCH1, Timer_microsecondsToTicks(red_ticks));
-	Timer_SetCompareMatch(TIMER1, TIMERCOMPAREMATCH2, Timer_microsecondsToTicks(green_ticks));
-	Timer_SetCompareMatch(TIMER1, TIMERCOMPAREMATCH3, Timer_microsecondsToTicks(azul_ticks));
-	Timer_SetCompareMatch(TIMER2, TIMERCOMPAREMATCH1, Timer_microsecondsToTicks(ambar_ticks));
-	Timer_SetCompareMatch(TIMER2, TIMERCOMPAREMATCH2, Timer_microsecondsToTicks(cyan_ticks));
+	Timer_SetCompareMatch(TIMER1, TIMERCOMPAREMATCH1,
+			Timer_microsecondsToTicks(red_ticks));
+	Timer_SetCompareMatch(TIMER1, TIMERCOMPAREMATCH2,
+			Timer_microsecondsToTicks(green_ticks));
+	Timer_SetCompareMatch(TIMER1, TIMERCOMPAREMATCH3,
+			Timer_microsecondsToTicks(azul_ticks));
+	Timer_SetCompareMatch(TIMER2, TIMERCOMPAREMATCH1,
+			Timer_microsecondsToTicks(ambar_ticks));
+	Timer_SetCompareMatch(TIMER2, TIMERCOMPAREMATCH2,
+			Timer_microsecondsToTicks(cyan_ticks));
 }
 
 void interrupt_Timer3Init(uint16_t duration_ms) {
@@ -263,94 +278,93 @@ void interrupt_timer2Periodo(void *ptr) {
 	}
 }
 
+void interrupt_timer1CompareMatch1(void *ptr) {
+	gpioWrite(LED_RED_STIM, OFF);
+}
 
-	void interrupt_timer1CompareMatch1(void *ptr) {
-		gpioWrite(LED_RED_STIM, OFF);
-	}
+void interrupt_timer1CompareMatch2(void *ptr) {
+	gpioWrite(LED_GREEN_STIM, OFF);
+}
 
-	void interrupt_timer1CompareMatch2(void *ptr) {
-		gpioWrite(LED_GREEN_STIM, OFF);
-	}
+void interrupt_timer1CompareMatch3(void *ptr) {
+	gpioWrite(LED_BLUE_STIM, OFF);
+}
 
-	void interrupt_timer1CompareMatch3(void *ptr) {
-		gpioWrite(LED_BLUE_STIM, OFF);
-	}
-
-	void interrupt_timer2CompareMatch1(void *ptr) {
-		gpioWrite(LED_AMBAR_STIM, OFF);
-	}
-	void interrupt_timer2CompareMatch2(void *ptr) {
-		gpioWrite(LED_CYAN_STIM, OFF);
-	}
+void interrupt_timer2CompareMatch1(void *ptr) {
+	gpioWrite(LED_AMBAR_STIM, OFF);
+}
+void interrupt_timer2CompareMatch2(void *ptr) {
+	gpioWrite(LED_CYAN_STIM, OFF);
+}
 
 //void timer0Periodo(void* ptr) {
-	/*======== Interrupción periodica con periodo de COMPLETECYCLE_PERIODO= 1 mseg ============*/
-	/*======== Con esta interrupciòn generamos una señal PWM con periodo de 1[seg]=========*/
-	/*	static uint8_t i = 0;
+/*======== Interrupción periodica con periodo de COMPLETECYCLE_PERIODO= 1 mseg ============*/
+/*======== Con esta interrupciòn generamos una señal PWM con periodo de 1[seg]=========*/
+/*	static uint8_t i = 0;
 
-	 if (i == 0) {
-	 pAux = pLed; //Error---> cada vez que ingresa a la interrupción me asigna nuevamente la direcciòn del primer nodo
-	 i = 1;
-	 }
-	 if (pAux != NULL) {
-	 gpioWrite(pAux->colorLed, ON);
+ if (i == 0) {
+ pAux = pLed; //Error---> cada vez que ingresa a la interrupción me asigna nuevamente la direcciòn del primer nodo
+ i = 1;
+ }
+ if (pAux != NULL) {
+ gpioWrite(pAux->colorLed, ON);
 
-	 pAux->dutyCycle = pAux->dutyCycle + pAux->factor;
-	 if (pAux->dutyCycle <= COMPLETECYCLE_PERIODO) {
-	 Timer_SetCompareMatch(TIMER0, TIMERCOMPAREMATCH1,
-	 Timer_microsecondsToTicks(pAux->dutyCycle));
-	 } else
-	 Timer_DisableCompareMatch(TIMER0, TIMERCOMPAREMATCH1);
+ pAux->dutyCycle = pAux->dutyCycle + pAux->factor;
+ if (pAux->dutyCycle <= COMPLETECYCLE_PERIODO) {
+ Timer_SetCompareMatch(TIMER0, TIMERCOMPAREMATCH1,
+ Timer_microsecondsToTicks(pAux->dutyCycle));
+ } else
+ Timer_DisableCompareMatch(TIMER0, TIMERCOMPAREMATCH1);
 
-	 if (pAux->dutyCycle > COMPLETECYCLE_PERIODO) {
-	 gpioWrite(pAux->colorLed, OFF);
-	 pAux->dutyCycle = pAux->factor;
-	 Timer_EnableCompareMatch(TIMER0, TIMERCOMPAREMATCH1,
-	 Timer_microsecondsToTicks(pAux->dutyCycle),
-	 timer0CompareMatch1);
+ if (pAux->dutyCycle > COMPLETECYCLE_PERIODO) {
+ gpioWrite(pAux->colorLed, OFF);
+ pAux->dutyCycle = pAux->factor;
+ Timer_EnableCompareMatch(TIMER0, TIMERCOMPAREMATCH1,
+ Timer_microsecondsToTicks(pAux->dutyCycle),
+ timer0CompareMatch1);
 
-	 if (pAux != NULL) {
-	 pAux = pAux->sig;
-	 }
-	 if (pAux == NULL) {
-	 pAux = pLed;
-	 }
+ if (pAux != NULL) {
+ pAux = pAux->sig;
+ }
+ if (pAux == NULL) {
+ pAux = pLed;
+ }
 
-	 gpioWrite(pAux->colorLed, ON);
+ gpioWrite(pAux->colorLed, ON);
 
-	 }
-	 } //else uartWriteString(UART_USB,miTextoLis);
+ }
+ } //else uartWriteString(UART_USB,miTextoLis);
 
-	 }
-	 void timer0CompareMatch1(void *ptr) {
+ }
+ void timer0CompareMatch1(void *ptr) {
 
-	 gpioWrite(pAux->colorLed, OFF);
-	 }
+ gpioWrite(pAux->colorLed, OFF);
+ }
 
-	 */
+ */
 
 //void timer1Periodo(void* ptr) {
-	/*
-	 //gpioToggle( GPIO3 );
-	 static uint16_t count_interrup = 0; // cuenta la cantidad de interrupciones para incrementar el ciclo de trabajo
-	 static uint16_t dutyCycle = 0;
+/*
+ //gpioToggle( GPIO3 );
+ static uint16_t count_interrup = 0; // cuenta la cantidad de interrupciones para incrementar el ciclo de trabajo
+ static uint16_t dutyCycle = 0;
 
-	 gpioWrite(GPIO3, ON);
-	 gpioWrite(GPIO4, ON);
-	 gpioWrite(GPIO5, ON);
+ gpioWrite(GPIO3, ON);
+ gpioWrite(GPIO4, ON);
+ gpioWrite(GPIO5, ON);
 
-	 //esta porción de código aumenta el ancho de pulso por el GPIO01 con el tiempo automáticamente.
-	 count_interrup = count_interrup + 1;
+ //esta porción de código aumenta el ancho de pulso por el GPIO01 con el tiempo automáticamente.
+ count_interrup = count_interrup + 1;
 
-	 if (count_interrup >= 30) {
-	 count_interrup = 0;
-	 dutyCycle = dutyCycle + 1;
-	 if (dutyCycle <= 1000) {
-	 Timer_SetCompareMatch(TIMER1, TIMERCOMPAREMATCH1,
-	 Timer_microsecondsToTicks(dutyCycle));
-	 } else
-	 dutyCycle = 0;
-	 }
+ if (count_interrup >= 30) {
+ count_interrup = 0;
+ dutyCycle = dutyCycle + 1;
+ if (dutyCycle <= 1000) {
+ Timer_SetCompareMatch(TIMER1, TIMERCOMPAREMATCH1,
+ Timer_microsecondsToTicks(dutyCycle));
+ } else
+ dutyCycle = 0;
+ }
 
-	 }*/
+ }*/
 

@@ -43,9 +43,10 @@
 /*=====[Implementations of private functions]================================*/
 int main(void) {
 	boardConfig();
+	//GPIO0 Por este pin avisa a la raspberry el primer ciclo de trabajo de cada estimulación
 	gpioConfig(GPIO0, GPIO_OUTPUT);
-	gpioConfig(GPIO1, GPIO_OUTPUT);
-	gpioConfig(GPIO2, GPIO_OUTPUT);
+	gpioConfig(GPIO1, GPIO_OUTPUT); //led infrarrojo
+	gpioConfig(GPIO2, GPIO_OUTPUT); // led infrarrojo
 	gpioConfig(LED_CYAN_STIM, GPIO_OUTPUT);
 	gpioConfig(LED_GREEN_STIM, GPIO_OUTPUT);
 	gpioConfig(LED_BLUE_STIM, GPIO_OUTPUT);
